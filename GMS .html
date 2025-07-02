@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Gamer Money Studios - Finish the Story Engine</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@700&family=Cutive+Mono&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-font: 'Rajdhani', sans-serif;
+            --screenplay-font: 'Cutive Mono', monospace;
+            --text-color: #FFFFFF;
+            --background-color: #000000;
+            --red-accent: #FF0000;
+            --blue-accent: #00A8FF;
+            /* The current accent color is dynamically set via JavaScript */
+            --current-accent: var(--red-accent); 
+        }
+        body {
+            font-family: var(--primary-font);
+            color: var(--text-color);
+            background-color: var(--background-color);
+            -webkit-font-smoothing: antialiased;
+            touch-action: manipulation; /* Prevents double-tap zoom on mobile */
+        }
+        .screenplay-text-font { font-family: var(--screenplay-font); }
+        
+        /* Animations */
+        @keyframes fadeIn { to { opacity: 1; } }
+        @keyframes fadeOut { to { opacity: 0; } }
+        @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.9; } 50% { transform: scale(1.05); opacity: 1; } }
+        @keyframes blink { 50% { opacity: 0; } }
+        
+        .animate-fade-in { animation: fadeIn 1s forwards; }
+        .animate-fade-out { animation: fadeOut 0.5s forwards; }
+        .animate-pulse { animation: pulse 2.5s infinite ease-in-out; }
+
+        .typing-cursor {
+            display: inline-block;
+            background-color: var(--current-accent);
+            width: 10px;
+            height: 1.4em;
+            animation: blink 1s step-end infinite;
+            vertical-align: text-bottom;
+            margin-left: 2px;
+            box-shadow: 0 0 10px var(--current-accent);
+        }
+        .ip-video-bg {
+            position: absolute; top: 50%; left: 50%;
+            width: 177.77vh; height: 100vh;
+            min-width: 100%; min-height: 56.25vw;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+            pointer-events: none;
+        }
+        .meter-blue { background-color: var(--blue-accent); box-shadow: 0 0 8px var(--blue-accent); }
+        .meter-red { background-color: var(--red-accent); box-shadow: 0 0 8px var(--red-accent); }
+    </style>
+</head>
+<body class="bg-black text-white m-0 p-0 w-full h-screen overflow-hidden">
+
+    <!-- Splash Screen -->
+    <div id="splash-screen" class="screen w-full h-full flex flex-col justify-center items-center opacity-0 animate-fade-in">
+        <svg class="w-3/5 max-w-[250px] animate-pulse" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" style="stop-color:var(--blue-accent);stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:var(--red-accent);stop-opacity:1" />
+                </linearGradient>
+            </defs>
+            <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Rajdhani, sans-serif" font-size="60" font-weight="bold" fill="url(#grad1)">GMS</text>
+            <text x="50%" y="75%" dominant-baseline="middle" text-anchor="middle" font-family="Rajdhani, sans-serif" font-size="14" fill="#888">FINISH THE STORY ENGINE</text>
+        </svg>
+    </div>
+
+    <!-- Hub Screen (Story Selection with Live Canon Meters) -->
+    <div id="hub-screen" class="screen hidden w-full h-full flex flex-col justify-center items-center p-5 box-border opacity-0 overflow-y-auto">
+        <div class="text-center mb-6 max-w-3xl">
+            <h1 class="text-4xl font-bold mb-2" style="color: var(--red-accent); text-shadow: 0 0 10px rgba(255,0,0,0.5);">FINISH THE STORY ENGINE</h1>
+            <p class="text-gray-300 text-base md:text-lg mb-4">
+                Welcome, legend. This is a new kind of storytelling. Your choices in these interactive experiences are recorded, influencing a live global canon. The dominant alignment of all players will shape the story of the official cinematic sequels.
+            </p>
+            <div class="flex justify-center items-center space-x-6 text-sm">
+                <div class="flex items-center space-x-2">
+                    <div class="w-4 h-4 rounded-sm meter-blue"></div>
+                    <span class="text-gray-400">Good Choices (Hope, Unity, Peace)</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-4 h-4 rounded-sm meter-red"></div>
+                    <span class="text-gray-400">Bad Choices (Conflict, Vengeance, Power)</span>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="text-3xl font-bold text-center mb-5">CHOOSE YOUR STORY</h2>
+        <div class="flex flex-col w-full max-w-2xl h-auto space-y-6">
+            <!-- Bear by Blade Panel -->
+            <div class="flex flex-col">
+                <div class="ip-panel h-40 border-2 border-[#333] rounded-lg relative overflow-hidden flex justify-center items-center cursor-pointer transition-all duration-200 ease-in-out hover:border-[var(--red-accent)] hover:shadow-[0_0_20px_var(--red-accent)] active:scale-95" data-ip="bear_by_blade">
+                    <iframe class="ip-video-bg" src="https://www.youtube.com/embed/zwqVnrFnLO8?autoplay=1&mute=1&loop=1&playlist=zwqVnrFnLO8&controls=0&showinfo=0&autohide=1&modestbranding=1" frameborder="0" allow="autoplay" title="Bear by Blade Video"></iframe>
+                    <h2 class="text-4xl font-bold z-10 bg-black bg-opacity-60 px-4 py-2 rounded">BEAR BY BLADE</h2>
+                </div>
+                <div class="mt-2 text-center">
+                    <p class="text-sm text-gray-400">GLOBAL CANON</p>
+                    <div class="w-full h-2 bg-[#111] border border-[#444] rounded-full mt-1 flex overflow-hidden">
+                        <div id="canon-meter-blue-bear_by_blade" class="h-full meter-blue transition-all duration-500"></div>
+                        <div id="canon-meter-red-bear_by_blade" class="h-full meter-red transition-all duration-500"></div>
+                    </div>
+                    <p id="canon-text-bear_by_blade" class="text-xs text-gray-300 mt-1">Calculating...</p>
+                </div>
+            </div>
+            <!-- Project Invictus Panel -->
+            <div class="flex flex-col">
+                <div class="ip-panel h-40 border-2 border-[#333] rounded-lg relative overflow-hidden flex justify-center items-center cursor-pointer transition-all duration-200 ease-in-out hover:border-[var(--blue-accent)] hover:shadow-[0_0_20px_var(--blue-accent)] active:scale-95" data-ip="project_invictus">
+                    <iframe class="ip-video-bg" src="https://www.youtube.com/embed/0uoaZZRbwqg?autoplay=1&mute=1&loop=1&playlist=0uoaZZRbwqg&controls=0&showinfo=0&autohide=1&modestbranding=1" frameborder="0" allow="autoplay" title="Project Invictus Video"></iframe>
+                    <h2 class="text-4xl font-bold z-10 bg-black bg-opacity-60 px-4 py-2 rounded">PROJECT INVICTUS</h2>
+                </div>
+                 <div class="mt-2 text-center">
+                    <p class="text-sm text-gray-400">GLOBAL CANON</p>
+                    <div class="w-full h-2 bg-[#111] border border-[#444] rounded-full mt-1 flex overflow-hidden">
+                        <div id="canon-meter-blue-project_invictus" class="h-full meter-blue transition-all duration-500"></div>
+                        <div id="canon-meter-red-project_invictus" class="h-full meter-red transition-all duration-500"></div>
+                    </div>
+                    <p id="canon-text-project_invictus" class="text-xs text-gray-300 mt-1">Calculating...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Demo Screen (Gameplay) -->
+    <div id="demo-screen" class="screen hidden w-full h-full bg-black">
+        <div id="youtube-player" class="youtube-background fixed top-[-10%] left-[-10%] w-[120%] h-[120%] pointer-events-none z-[-1] opacity-0 transition-opacity duration-1000 ease-in-out"></div>
+        
+        <!-- MOBILITY FIX: The overlay is now the flex container, and a new inner div handles scrolling -->
+        <div class="overlay w-full h-full bg-gradient-to-t from-black via-black/80 to-black/60 flex flex-col box-border p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+            <!-- Header elements are absolutely positioned relative to the overlay -->
+            <a href="#" id="back-button" class="absolute top-[calc(1rem+env(safe-area-inset-top))] left-4 bg-black/50 rounded-full w-10 h-10 flex items-center justify-center z-20 text-white text-2xl no-underline">←</a>
+            <div class="alignment-meter-container w-2/5 max-w-xs h-2 bg-[#222] rounded-full overflow-hidden absolute top-[calc(1.5rem+env(safe-area-inset-top))] right-4 border border-[#444] z-20 flex">
+                <div id="alignment-meter-blue" class="h-full meter-blue transition-all duration-1000 ease-in-out"></div>
+                <div id="alignment-meter-red" class="h-full meter-red transition-all duration-1000 ease-in-out"></div>
+            </div>
+            
+            <!-- MOBILITY FIX: This new div wraps both screenplay and choices, allowing them to scroll together on small screens -->
+            <div class="w-full flex-1 mt-[60px] overflow-y-auto">
+                <div id="screenplay-container" class="mb-5 bg-black/30 rounded-lg p-4 border border-white/10">
+                    <div id="scene-header" class="text-sm opacity-70 mb-4" style="color: var(--current-accent);"></div>
+                    <p id="screenplay-text" class="screenplay-text-font text-lg leading-relaxed whitespace-pre-wrap" style="text-shadow: 0 0 5px var(--current-accent);"></p>
+                </div>
+                <div id="choice-container" class="min-h-[100px] flex flex-col justify-center border-t border-[var(--current-accent)] pt-4 space-y-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Impact Screen (Choice Consequence) -->
+    <div id="impact-screen" class="screen modal-screen hidden w-full h-full flex flex-col justify-center items-center bg-black/90 p-5 text-center opacity-0">
+        <h2 class="text-2xl font-bold mb-4" style="color: var(--current-accent); text-shadow: 0 0 10px var(--current-accent);">NARRATIVE SHIFT DETECTED</h2>
+        <p class="text-lg">Your Choice:</p>
+        <p id="impact-choice-text" class="text-lg bg-[#222] p-3 rounded-md my-3 w-full max-w-md"></p>
+        <div class="alignment-meter-container w-4/5 max-w-md h-2 bg-[#222] rounded-full overflow-hidden my-5 border border-[#444] flex">
+            <div id="impact-meter-blue" class="h-full meter-blue transition-all duration-1000 ease-in-out"></div>
+            <div id="impact-meter-red" class="h-full meter-red transition-all duration-1000 ease-in-out"></div>
+        </div>
+        <p id="impact-consequence-text" class="text-base leading-relaxed mb-5 w-full max-w-md"></p>
+        <p class="text-sm text-gray-400 tracking-widest animate-pulse">LOADING NEXT NARRATIVE BRANCH...</p>
+    </div>
+
+    <!-- Forecast Screen (End) -->
+    <div id="forecast-screen" class="screen modal-screen hidden w-full h-full flex flex-col justify-center items-center bg-black/90 p-5 text-center opacity-0">
+        <h2 class="text-2xl font-bold mb-4" style="color: var(--current-accent); text-shadow: 0 0 10px var(--current-accent);">CANON FORECAST</h2>
+        <div class="w-full max-w-lg space-y-4">
+            <div>
+                <p class="text-sm text-gray-300">YOUR FINAL ALIGNMENT</p>
+                <div class="forecast-meter-container w-full h-5 bg-[#111] rounded-lg overflow-hidden mt-1 border border-[#555] flex">
+                    <div id="forecast-meter-blue-player" class="h-full transition-all duration-1000 ease-in-out meter-blue"></div>
+                    <div id="forecast-meter-red-player" class="h-full transition-all duration-1000 ease-in-out meter-red"></div>
+                </div>
+            </div>
+            <div>
+                <p class="text-sm text-gray-300">LIVE GLOBAL CANON (UPDATED)</p>
+                <div class="forecast-meter-container w-full h-5 bg-[#111] rounded-lg overflow-hidden mt-1 border border-[#555] flex">
+                    <div id="forecast-meter-blue-canon" class="h-full transition-all duration-1000 ease-in-out meter-blue"></div>
+                    <div id="forecast-meter-red-canon" class="h-full transition-all duration-1000 ease-in-out meter-red"></div>
+                </div>
+            </div>
+        </div>
+        <p id="forecast-text" class="text-base leading-relaxed my-4 w-full max-w-lg"></p>
+        <p class="text-xs text-gray-400 mb-6 w-full max-w-lg">Your playthrough has been recorded, influencing the live canon that will shape the cinematic sequel.</p>
+        <button id="restart-button" class="choice-button w-full max-w-md py-4 rounded-lg text-base font-bold border-2 transition-colors duration-200">RETURN TO HUB</button>
+    </div>
+
+    <!-- Firebase and App Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, runTransaction, onSnapshot, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- 1. DEFINE ALL VARIABLES AND CONSTANTS ---
+
+        let db, auth, userId;
+        let player, currentIP, typeInterval;
+        let playerAlignment = 50; // Start at a neutral 50%. Represents the "blue" alignment percentage for the current player.
+        let canonUnsubscribe = {}; 
+
+        const root = document.documentElement;
+        const screens = {
+            splash: document.getElementById('splash-screen'),
+            hub: document.getElementById('hub-screen'),
+            demo: document.getElementById('demo-screen'),
+            impact: document.getElementById('impact-screen'),
+            forecast: document.getElementById('forecast-screen')
+        };
+        const choiceContainer = document.getElementById('choice-container');
+        const backButton = document.getElementById('back-button');
+        const restartButton = document.getElementById('restart-button');
+        const youtubePlayerEl = document.getElementById('youtube-player');
+        
+        // Meter Elements
+        const alignmentMeterBlue = document.getElementById('alignment-meter-blue');
+        const alignmentMeterRed = document.getElementById('alignment-meter-red');
+        const impactMeterBlue = document.getElementById('impact-meter-blue');
+        const impactMeterRed = document.getElementById('impact-meter-red');
+        const forecastMeterBluePlayer = document.getElementById('forecast-meter-blue-player');
+        const forecastMeterRedPlayer = document.getElementById('forecast-meter-red-player');
+
+        // --- STORY DATABASE ---
+        // Alignment: 0 = Red (Conflict/Vengeance), 100 = Blue (Hope/Peace)
+        const storyDatabase = {
+            bear_by_blade: {
+                color: 'var(--red-accent)',
+                start: { 
+                    youtubeId: 'zwqVnrFnLO8', 
+                    text: "In the ruins of a human city, the ambitious lion Leo discovers an iPhone. Fascinated by human technology and visions of power, he follows a cryptic code on the device to a hidden cave, where he finds the Master Cube. The Elders warn him of its danger, but he is consumed by his vision.", 
+                    choices: [ 
+                        { text: "Dismiss the Elders and seize the Cube's power.", nextScene: 'lion_king', impactText: "You have chosen ambition over tradition. The power is yours to shape.", alignmentShift: -20 }, 
+                        { text: "Attempt to reason with the Elders, sharing his discovery.", nextScene: 'elders_warning', impactText: "You chose diplomacy, but the lure of the Cube remains strong.", alignmentShift: 10 },
+                    ] 
+                },
+                elders_warning: {
+                    youtubeId: 'c5B8RSEUocY',
+                    text: "The Elders recount the story of humanity's downfall, pleading with Leo to abandon the Cube. They see the same destructive ambition in his eyes. Leo listens, but the promise of a grand lion empire is too tempting to ignore.",
+                    choices: [
+                        { text: "Turn on the Elders, taking the power by force.", nextScene: 'lion_king', impactText: "Patience has its limits. You eliminate the obstacles to your destiny.", alignmentShift: -25 },
+                        { text: "Pretend to agree, hiding the Cube to study later.", nextScene: 'fall_of_bear_clan', impactText: "A cunning choice. You bide your time, your ambition hidden beneath a veneer of compliance.", alignmentShift: -10 }
+                    ]
+                },
+                lion_king: {
+                    youtubeId: 'V-KOaQF_qQk',
+                    text: "With the Elders tragically slain, Leo declares himself Lion King. Using the Master Cube, he raises the gleaming, technological Lion City. The Eagles, seeing his power as divine, become his loyal guard. His rule is absolute.",
+                    choices: [
+                        { text: "Begin the expansion. The other clans must submit.", nextScene: 'fall_of_bear_clan', impactText: "Your empire begins now. The world will know the power of the Lion King.", alignmentShift: -15 }
+                    ]
+                },
+                fall_of_bear_clan: { 
+                    youtubeId: 'u64_iTQAZyw', 
+                    text: "In a secluded valley, the young bear Cal trains reluctantly, wishing only for peace. He sees his uncle, Borin, using a forbidden human device. Before he can act, the Lion King's forces attack. Cal watches in horror as his father is taken and his uncle stands with the enemy. The Lion King shoots Cal and leaves him for dead.", 
+                    choices: [ 
+                        { text: "Awaken with a burning need for vengeance.", nextScene: 'path_of_vengeance', impactText: "They took everything from you. Now, you will take everything from them.", alignmentShift: -20 }
+                    ] 
+                },
+                path_of_vengeance: {
+                    youtubeId: 'u64_iTQAZyw',
+                    text: "Cal awakens in the ruins of his home. Consumed by rage, he finds a laser sword left by the attackers and begins his hunt. He meets Anya, a rabbit resistance leader, who urges him to let go of his anger. He ignores her, his path set on revenge.",
+                    choices: [
+                        { text: "Continue the hunt alone, fueled by rage.", nextScene: 'bounty_hunter', impactText: "Your pain is your strength. No one will stand in your way.", alignmentShift: -15 },
+                        { text: "Listen to Anya and consider joining the resistance.", nextScene: 'bounty_hunter', impactText: "Her words plant a seed of doubt. Perhaps there is another way...", alignmentShift: 15 }
+                    ]
+                },
+                bounty_hunter: {
+                    youtubeId: 'c5B8RSEUocY',
+                    text: "In a rocky canyon, Cal is ambushed by Jasper, an ape bounty hunter hired by the Lion King. During their fierce battle, Jasper witnesses the Lion King's forces brutally attack a nearby village. Disillusioned, he abandons his contract.",
+                    choices: [
+                        { text: "Accept Jasper's help. An enemy of my enemy...", nextScene: 'forecast', impactText: "You have gained a powerful, if unexpected, ally. The path to Lion City is clearer.", alignmentShift: 10 },
+                        { text: "Reject him. Trust no one.", nextScene: 'forecast', impactText: "You walk this path alone. His change of heart means nothing to you.", alignmentShift: -10 }
+                    ]
+                }
+            },
+            project_invictus: {
+                color: 'var(--blue-accent)',
+                start: { 
+                    youtubeId: '0uoaZZRbwqg', 
+                    text: "On a vibrant, technologically advanced African continent among the stars, the young warrior Zeke is troubled by vivid, prophetic dreams of a devastating invasion by a modernized Roman Galactic Empire.", 
+                    choices: [ 
+                        { text: "Warn the elders, trusting in their wisdom.", nextScene: 'warning', impactText: "You have chosen the path of tradition and community. You place your faith in your leaders.", alignmentShift: 15 }, 
+                        { text: "Prepare for war alone, trusting only your visions.", nextScene: 'invasion', impactText: "You have chosen self-reliance. If war is coming, you will be ready, with or without them.", alignmentShift: -10 }, 
+                    ] 
+                },
+                warning: { 
+                    youtubeId: '4hE3rF_Urh8', 
+                    text: "Zeke presents his visions to the council of elders. They listen patiently but ultimately dismiss his dreams as youthful anxiety, urging calm and peace. They do not believe the long-lost Romans could pose a threat.", 
+                    choices: [ 
+                        { text: "Defy the council and attempt to raise a citizen militia.", nextScene: 'invasion', impactText: "Your conviction is unshakable. If the leaders will not act, the people must.", alignmentShift: 20 }, 
+                        { text: "Accept their judgment and hope you are wrong.", nextScene: 'invasion', impactText: "You bow to their wisdom, but a sense of dread remains. You pray it is unfounded.", alignmentShift: -5 }, 
+                    ] 
+                },
+                invasion: { 
+                    youtubeId: 'icIAY_hnQxM', 
+                    text: "The Roman Galactic Empire attacks. The invasion is swift, technologically superior, and brutal. The continent's defenses are overwhelmed. In the chaos, Zeke fights with unmatched ferocity but is eventually captured.", 
+                    choices: [ 
+                        { text: "He will be made an example of. He will be made a gladiator.", nextScene: 'gladiator', impactText: "Your defiance has been noticed. Your fight is not over; it has merely changed arenas.", alignmentShift: 0 }
+                    ] 
+                },
+                gladiator: {
+                    youtubeId: '0uoaZZRbwqg',
+                    text: "Forced to fight in the Roman arenas, Zeke's skill and courage are undeniable. He becomes a symbol of defiance, his victories igniting a spark of hope among the enslaved population. He is no longer just a warrior; he is a symbol.",
+                    choices: [
+                        { text: "Embrace the role of champion and inspire the rebellion.", nextScene: 'escape', impactText: "You use their spectacle against them, turning fear into hope with every victory.", alignmentShift: 25 },
+                        { text: "Focus only on survival and finding a path to escape.", nextScene: 'escape', impactText: "Hope is a luxury. Survival is the only thing that matters. You fight for yourself.", alignmentShift: -15 }
+                    ]
+                },
+                escape: {
+                    youtubeId: '4hE3rF_Urh8',
+                    text: "A daring resistance movement, seeing the hope Zeke inspires, orchestrates his escape. Free from the arena, he joins their ranks, bringing his formidable skills and symbolic power to their cause.",
+                    choices: [
+                        { text: "Rise as a leader and take the fight to the Empire.", nextScene: 'forecast', impactText: "You are no longer just a symbol; you are a leader. The real war begins now.", alignmentShift: 15 },
+                        { text: "Advise caution, gathering strength before striking.", nextScene: 'forecast', impactText: "Freedom is not enough. You counsel patience, knowing a single mistake could doom you all.", alignmentShift: 5 }
+                    ]
+                }
+            }
+        };
+
+        // --- 2. DEFINE ALL FUNCTIONS ---
+        
+        /**
+         * Hides all screens and then shows the specified screen with a fade-in animation.
+         * @param {string} screenName - The ID of the screen to show (e.g., 'hub', 'demo').
+         */
+        function showScreen(screenName) {
+            Object.values(screens).forEach(s => {
+                if (!s.classList.contains('hidden') && s.id !== screenName) {
+                    s.classList.add('animate-fade-out');
+                    setTimeout(() => s.classList.add('hidden'), 500);
+                }
+            });
+            const screenToShow = screens[screenName];
+            if (screenToShow) {
+                screenToShow.classList.remove('hidden', 'animate-fade-out', 'opacity-0');
+                screenToShow.classList.add('animate-fade-in');
+            }
+        }
+
+        /**
+         * Implements a typewriter effect for text display.
+         * @param {HTMLElement} el - The HTML element to display the text in.
+         * @param {string} txt - The text to type.
+         * @param {number} [i=0] - The current index of the character being typed.
+         */
+        function typeWriter(el, txt, i = 0) {
+            clearTimeout(typeInterval); // Clear any existing typing interval
+            if (i < txt.length) {
+                // Append character and a blinking cursor
+                el.innerHTML = txt.substring(0, i + 1) + '<span class="typing-cursor"></span>';
+                typeInterval = setTimeout(() => typeWriter(el, txt, i + 1), 30); // Adjust typing speed here
+            } else {
+                el.innerHTML = txt; // Remove cursor after typing is complete
+                revealChoices(); // Show choices once text is fully typed
+            }
+        }
+
+        /**
+         * Renders the interactive choices for the current scene.
+         */
+        function revealChoices() {
+            const scene = storyDatabase[currentIP][window.currentSceneKey];
+            choiceContainer.innerHTML = ''; // Clear previous choices
+            choiceContainer.style.opacity = '0'; // Start with choices hidden for fade-in
+
+            if (!scene.choices || scene.choices.length === 0) return; // No choices to display
+
+            scene.choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.textContent = choice.text;
+                button.className = 'choice-button w-full py-4 rounded-lg text-lg font-bold border-2 transition-colors duration-200';
+                button.style.color = 'var(--text-color)';
+                button.style.borderColor = 'var(--current-accent)';
+                button.style.backgroundColor = 'transparent';
+                
+                // Add hover effects for buttons
+                button.onmouseover = () => { button.style.backgroundColor = 'var(--current-accent)'; button.style.color = '#000'; };
+                button.onmouseout = () => { button.style.backgroundColor = 'transparent'; button.style.color = 'var(--text-color)'; };
+                
+                button.onclick = () => handleChoice(choice); // Attach choice handler
+                choiceContainer.appendChild(button);
+            });
+            // Animate choices to fade in
+            setTimeout(() => { choiceContainer.style.transition = 'opacity 0.5s'; choiceContainer.style.opacity = '1'; }, 100);
+        }
+
+        /**
+         * Centralized function to update all player alignment meters consistently.
+         * The 'playerAlignment' variable (0-100) represents the percentage of the "blue" alignment.
+         */
+        function updatePlayerAlignmentMeter() {
+            const bluePercent = Math.max(0, Math.min(100, playerAlignment)); // Clamp between 0 and 100
+            const redPercent = 100 - bluePercent;
+
+            // Update in-game demo screen meter
+            alignmentMeterBlue.style.width = `${bluePercent}%`;
+            alignmentMeterRed.style.width = `${redPercent}%`;
+
+            // Update impact screen meter
+            impactMeterBlue.style.width = `${bluePercent}%`;
+            impactMeterRed.style.width = `${redPercent}%`;
+            
+            // Update forecast screen player meter
+            forecastMeterBluePlayer.style.width = `${bluePercent}%`;
+            forecastMeterRedPlayer.style.width = `${redPercent}%`;
+        }
+
+        /**
+         * Loads and displays a new scene based on the provided scene key.
+         * Updates YouTube video, scene header, and screenplay text.
+         * @param {string} sceneKey - The key of the scene to load from the story database.
+         */
+        function loadScene(sceneKey) {
+            window.currentSceneKey = sceneKey; // Store current scene key globally
+            const ipData = storyDatabase[currentIP];
+            const scene = ipData[sceneKey];
+            
+            // DYNAMIC THEME FIX: Set the accent color for the current story
+            root.style.setProperty('--current-accent', ipData.color);
+            
+            showScreen('demo'); // Transition to the demo screen
+            
+            youtubePlayerEl.style.opacity = '1'; // Ensure YouTube player is visible
+            // Load new YouTube video if player is ready
+            if (player && typeof player.loadVideoById === 'function') {
+                player.loadVideoById({ videoId: scene.youtubeId, startSeconds: 0 });
+            }
+
+            // Update scene header and start typewriter effect for screenplay text
+            document.getElementById('scene-header').textContent = `[ ${currentIP.replace(/_/g, ' ').toUpperCase()} // NARRATIVE STREAM: ${sceneKey.toUpperCase()} ]`;
+            const screenplayEl = document.getElementById('screenplay-text');
+            choiceContainer.innerHTML = ''; // Clear old choices immediately to prevent flicker
+            setTimeout(() => typeWriter(screenplayEl, scene.text), 500); // Delay typing start
+        }
+
+        /**
+         * Handles a player's choice, updates alignment, displays impact, and transitions to the next scene or forecast.
+         * @param {object} choice - The chosen option object containing text, nextScene, impactText, and alignmentShift.
+         */
+        function handleChoice(choice) {
+            playerAlignment += choice.alignmentShift; // Adjust player alignment
+            updatePlayerAlignmentMeter(); // Update all meters with the new value
+
+            showScreen('impact'); // Show the impact screen
+            document.getElementById('impact-choice-text').textContent = `"${choice.text}"`;
+            document.getElementById('impact-consequence-text').textContent = choice.impactText;
+            
+            // After a delay, either load the next scene or the forecast screen
+            setTimeout(() => {
+                if (choice.nextScene === 'forecast') {
+                    loadForecast();
+                } else {
+                    loadScene(choice.nextScene);
+                }
+            }, 4000); // 4-second delay to allow user to read the impact
+        }
+
+        /**
+         * Initializes Firebase and authenticates the user (anonymously or with custom token).
+         * Sets up listeners for global canon data.
+         */
+        async function initializeFirebase() {
+            try {
+                // Retrieve Firebase config from environment variables
+                const firebaseConfigStr = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
+                if (!firebaseConfigStr) throw new Error("Firebase config not provided by environment.");
+                
+                const firebaseConfig = JSON.parse(firebaseConfigStr);
+                setLogLevel('error'); // Suppress verbose Firebase logs
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                // Authenticate user: try with custom token, then anonymously
+                await new Promise((resolve, reject) => {
+                    const unsub = onAuthStateChanged(auth, async (user) => {
+                        unsub(); // Unsubscribe after first check to prevent multiple calls
+                        if (user) {
+                            userId = user.uid;
+                            resolve();
+                        } else {
+                            try {
+                                const authToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                                if (authToken) {
+                                    await signInWithCustomToken(auth, authToken);
+                                } else {
+                                    await signInAnonymously(auth);
+                                }
+                                userId = auth.currentUser.uid; // Get UID after successful sign-in
+                                resolve();
+                            } catch (authError) {
+                                reject(authError);
+                            }
+                        }
+                    }, reject);
+                });
+                
+                console.log("Firebase initialized and user authenticated:", userId);
+                // Start listening to canon data for both IPs
+                listenToCanon('bear_by_blade');
+                listenToCanon('project_invictus');
+
+            } catch (error) {
+                console.error("Firebase initialization failed:", error);
+                // If Firebase fails, display canon meters as "OFFLINE"
+                updateCanonMeters('bear_by_blade', 50, true);
+                updateCanonMeters('project_invictus', 50, true);
+            }
+        }
+
+        /**
+         * Sets up a real-time listener for the global canon of a specific story.
+         * Updates the UI meters and text when canon data changes.
+         * @param {string} storyId - The ID of the story (e.g., 'bear_by_blade', 'project_invictus').
+         */
+        function listenToCanon(storyId) {
+            if (!db) return; // Ensure Firestore is initialized
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            // Reference to the public Firestore document for the story's canon
+            const canonDocRef = doc(db, `artifacts/${appId}/public/story_canon`, storyId);
+
+            if (canonUnsubscribe[storyId]) canonUnsubscribe[storyId](); // Unsubscribe from previous listener if it exists
+
+            canonUnsubscribe[storyId] = onSnapshot(canonDocRef, (docSnap) => {
+                let totalAlignment = 50 * 10; // Default values for initial display (e.g., 10 playthroughs at 50%)
+                let playthroughCount = 10;
+                
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    totalAlignment = data.totalAlignment || 0;
+                    playthroughCount = data.playthroughCount || 0;
+                }
+                
+                // Calculate average alignment
+                const averageAlignment = playthroughCount > 0 ? totalAlignment / playthroughCount : 50;
+                updateCanonMeters(storyId, averageAlignment); // Update UI
+            }, (error) => {
+                console.error(`Error listening to ${storyId} canon:`, error);
+                updateCanonMeters(storyId, 50, true); // Show meter as offline on error
+            });
+        }
+
+        /**
+         * Updates the visual representation of the global canon meters (blue/red bars and text).
+         * @param {string} storyId - The ID of the story.
+         * @param {number} alignment - The average alignment percentage (0-100).
+         * @param {boolean} [error=false] - If true, indicates an error and displays "OFFLINE".
+         */
+        function updateCanonMeters(storyId, alignment, error = false) {
+            const bluePercent = Math.round(Math.max(0, Math.min(100, alignment)));
+            const redPercent = 100 - bluePercent;
+
+            const blueMeter = document.getElementById(`canon-meter-blue-${storyId}`);
+            const redMeter = document.getElementById(`canon-meter-red-${storyId}`);
+            const textEl = document.getElementById(`canon-text-${storyId}`);
+
+            if (blueMeter && redMeter) {
+                blueMeter.style.width = `${bluePercent}%`;
+                redMeter.style.width = `${redPercent}%`;
+            }
+            if(textEl) {
+                if (error) {
+                    textEl.textContent = "GLOBAL CANON: OFFLINE";
+                    textEl.style.color = '#888';
+                } else if (storyId === 'project_invictus') {
+                    // REACTIVITY FIX: More descriptive text for the meter
+                    textEl.innerHTML = `<span style="color: var(--blue-accent);">${bluePercent}% Hope/Unity</span> vs <span style="color: var(--red-accent);">${redPercent}% Conflict/Desperation</span>`;
+                } else { // bear_by_blade
+                    textEl.innerHTML = `<span style="color: var(--blue-accent);">${bluePercent}% Peace/Community</span> vs <span style="color: var(--red-accent);">${redPercent}% Vengeance/Power</span>`;
+                }
+            }
+        }
+
+        /**
+         * Loads the forecast screen, updates player and global canon meters, and displays a narrative forecast.
+         * Updates the global canon in Firestore using a transaction for atomic updates.
+         */
+        async function loadForecast() {
+            showScreen('forecast');
+            updatePlayerAlignmentMeter(); // This now updates the forecast player meter too
+
+            if (db && userId) {
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                const canonDocRef = doc(db, `artifacts/${appId}/public/story_canon`, currentIP);
+
+                try {
+                    // This transaction atomically updates the global canon for all players in real-time.
+                    const newAverageAlignment = await runTransaction(db, async (transaction) => {
+                        const canonDoc = await transaction.get(canonDocRef);
+                        let totalAlignment = 50 * 10; // Default values if document doesn't exist
+                        let playthroughCount = 10;
+
+                        if (canonDoc.exists()) {
+                            totalAlignment = canonDoc.data().totalAlignment;
+                            playthroughCount = canonDoc.data().playthroughCount;
+                        }
+                        
+                        const newTotalAlignment = totalAlignment + playerAlignment;
+                        const newPlaythroughCount = playthroughCount + 1;
+                        
+                        // Update the document with new totals and a timestamp
+                        transaction.set(canonDocRef, { 
+                            totalAlignment: newTotalAlignment, 
+                            playthroughCount: newPlaythroughCount,
+                            lastUpdated: serverTimestamp()
+                        }, { merge: true }); // Use merge to avoid overwriting other fields if they exist
+                        
+                        return newTotalAlignment / newPlaythroughCount; // Return the new average
+                    });
+                    
+                    // Update the global canon meter on the forecast screen
+                    const canonBluePercent = Math.round(newAverageAlignment);
+                    document.getElementById('forecast-meter-blue-canon').style.width = `${canonBluePercent}%`;
+                    document.getElementById('forecast-meter-red-canon').style.width = `${100 - canonBluePercent}%`;
+
+                } catch (e) {
+                    console.error("Transaction failed: ", e);
+                    // Fallback to last known value if transaction fails (from hub screen's meter)
+                    const blueMeterWidth = document.getElementById(`canon-meter-blue-${currentIP}`).style.width;
+                    document.getElementById('forecast-meter-blue-canon').style.width = blueMeterWidth;
+                    document.getElementById('forecast-meter-red-canon').style.width = document.getElementById(`canon-meter-red-${currentIP}`).style.width;
+                }
+            }
+
+            // Determine and display the forecast text based on player's final alignment
+            const isBlueLeaning = playerAlignment >= 50;
+            const forecastText = document.getElementById('forecast-text');
+            if (currentIP === 'project_invictus') {
+                forecastText.textContent = isBlueLeaning ? 
+                    `Your choices have pushed the galaxy towards unity and hope. A future built on cooperation is possible.` : 
+                    `Your choices have dragged the galaxy deeper into conflict and desperation. The fires of war will burn brighter because of you.`;
+            } else { // bear_by_blade
+                 forecastText.textContent = isBlueLeaning ? 
+                    `Your choices have steered the world towards peace and community. You chose forgiveness over fury.` : 
+                    `Your choices have fed the cycle of vengeance and power. The world will answer your rage in kind.`;
+            }
+        }
+
+        /**
+         * Sets up all necessary event listeners for UI interactions.
+         */
+        function setupEventListeners() {
+            // Event listeners for IP selection panels
+            document.querySelectorAll('.ip-panel').forEach(panel => {
+                panel.addEventListener('click', () => {
+                    currentIP = panel.dataset.ip;
+                    playerAlignment = 50; // Reset player alignment for a new game
+                    updatePlayerAlignmentMeter(); // Update meters to reflect reset
+                    loadScene('start'); // Load the starting scene for the selected IP
+                });
+            });
+
+            // Back button functionality
+            backButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (player && typeof player.stopVideo === 'function') player.stopVideo(); // Stop YouTube video
+                youtubePlayerEl.style.opacity = '0'; // Hide YouTube player
+                showScreen('hub'); // Return to the hub screen
+            });
+
+            // Restart button functionality (from forecast screen)
+            restartButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                showScreen('hub'); // Return to the hub screen
+            });
+            
+            // DYNAMIC THEME FIX: Make restart button style dynamic based on current IP's accent color
+            const restartBtn = document.getElementById('restart-button');
+            restartBtn.onmouseover = () => { restartBtn.style.backgroundColor = 'var(--current-accent)'; restartBtn.style.color = '#000'; };
+            restartBtn.onmouseout = () => { restartBtn.style.backgroundColor = 'transparent'; restartBtn.style.color = 'var(--text-color)'; };
+            // The border color itself is set when the forecast screen loads, via the --current-accent variable
+            restartBtn.style.borderColor = 'var(--current-accent)';
+        }
+        
+        /**
+         * Handles errors from the YouTube player.
+         * @param {object} event - The YouTube player error event.
+         */
+        function onPlayerError(event) {
+            console.error("An error occurred with the YouTube player:", event.data);
+            youtubePlayerEl.style.opacity = '0'; // Hide player on error to avoid broken display
+        }
+
+        /**
+         * Callback function called when the YouTube IFrame API is ready.
+         * Initializes the YouTube player.
+         */
+        window.onYouTubeIframeAPIReady = function() {
+            player = new YT.Player('youtube-player', {
+                height: '100%',
+                width: '100%',
+                playerVars: { 
+                    'autoplay': 1, 
+                    'controls': 0, 
+                    'showinfo': 0, 
+                    'rel': 0, 
+                    'loop': 1, 
+                    'mute': 1, 
+                    'playsinline': 1, 
+                    'origin': window.location.origin // Essential for security and proper playback
+                },
+                events: { 
+                    'onReady': (event) => event.target.mute(), // Mute video on ready
+                    'onError': onPlayerError // Handle player errors
+                }
+            });
+        }
+        
+        // --- 3. DEFINE THE MAIN APP ENTRY POINT ---
+
+        /**
+         * Main function to initialize the application.
+         * Sets up event listeners, initializes Firebase, loads YouTube API, and transitions to the hub screen.
+         */
+        async function main() {
+            setupEventListeners(); // Set up all UI event listeners
+            await initializeFirebase(); // Initialize Firebase and authenticate
+            
+            // Dynamically load the YouTube IFrame API script
+            const tag = document.createElement('script');
+            tag.src = "https://www.youtube.com/iframe_api";
+            const firstScriptTag = document.getElementsByTagName('script')[0];
+            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+            
+            // After a delay, transition from splash screen to hub screen
+            setTimeout(() => showScreen('hub'), 3000);
+        }
+
+        // --- 4. RUN THE APP ---
+        main();
+
+    </script>
+</body>
+</html>
