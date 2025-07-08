@@ -1,56 +1,4 @@
-# Gmsftse
-FTSE 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Gamer Money Studios - Finish the Story Engine</title>
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@700&family=Cutive+Mono&display=swap" rel="stylesheet">
 
-    <style>
-        :root {
-            --primary-font: 'Rajdhani', sans-serif;
-            --screenplay-font: 'Cutive Mono', monospace;
-            --text-color: #FFFFFF;
-            --background-color: #000000;
-            --red-accent: #FF0000;
-            --blue-accent: #00A8FF;
-            --current-accent: var(--red-accent);
-        }
-        body {
-            font-family: var(--primary-font);
-            color: var(--text-color);
-            background-color: var(--background-color);
-            -webkit-font-smoothing: antialiased;
-        }
-        .screenplay-text-font { font-family: var(--screenplay-font); }
-        @keyframes fadeIn { to { opacity: 1; } }
-        @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.9; } 50% { transform: scale(1.05); opacity: 1; } }
-        @keyframes blink { 50% { opacity: 0; } }
-        .animate-fade-in { animation: fadeIn 1s forwards; }
-        .animate-pulse { animation: pulse 2.5s infinite ease-in-out; }
-        .typing-cursor {
-            display: inline-block;
-            background-color: var(--current-accent);
-            width: 10px;
-            height: 1.4em;
-            animation: blink 1s step-end infinite;
-            vertical-align: text-bottom;
-            margin-left: 2px;
-            box-shadow: 0 0 10px var(--current-accent);
-        }
-        .ip-video-bg {
-            position: absolute; top: 50%; left: 50%;
             width: 177.77vh; height: 100vh;
             min-width: 100%; min-height: 56.25vw;
             transform: translate(-50%, -50%);
@@ -102,16 +50,7 @@ FTSE
                     <h2 class="text-4xl font-bold z-10 bg-black bg-opacity-60 px-4 py-2 rounded">PROJECT INVICTUS</h2>
                 </div>
                  <div class="mt-2 text-center">
-                    <p class="text-sm text-gray-400">GLOBAL CANON</p>
-                    <div class="w-full h-2 bg-[#111] border border-[#444] rounded-full mt-1 flex overflow-hidden">
-                        <div id="canon-meter-blue-project_invictus" class="h-full meter-blue transition-all duration-500"></div>
-                        <div id="canon-meter-red-project_invictus" class="h-full meter-red transition-all duration-500"></div>
-                    </div>
-                    <p id="canon-text-project_invictus" class="text-xs text-gray-300 mt-1">Calculating...</p>
-                </div>
-            </div>
-        </div>
-    </div>
+                    <p class="text-sm text-gray-400">
 
     <!-- Demo Screen (Gameplay) -->
     <div id="demo-screen" class="screen hidden w-full h-full bg-black">
